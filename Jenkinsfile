@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         DOCKER_IMAGE = 'balaji5667/mediplus-lite'  // Docker Hub image
-        DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'  // Jenkins credentials ID
+        DOCKER_CREDENTIALS_ID = 'dockerhub-creds'  // Jenkins credentials ID
         PROJECT_DIR = 'mediplus-lite'  // Folder with your HTML/CSS
     }
 
