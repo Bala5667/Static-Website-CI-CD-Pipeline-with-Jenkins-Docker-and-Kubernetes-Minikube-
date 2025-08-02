@@ -1,6 +1,10 @@
+# Lightweight web server
 FROM nginx:alpine
-RUN rm -rf /usr/share/nginx/html/*
+
+# Copy files to Nginx
 COPY . /usr/share/nginx/html
+
+# Expose port
 EXPOSE 80
 
 
