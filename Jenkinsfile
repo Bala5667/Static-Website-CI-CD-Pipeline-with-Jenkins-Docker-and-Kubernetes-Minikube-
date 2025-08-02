@@ -2,28 +2,28 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'balaji5667/mediaplus-lite'  // Docker Hub image name
+        DOCKER_IMAGE = 'balaji5667/mediplus-lite'  // Docker Hub image
         DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'  // Jenkins credentials ID
-        PROJECT_DIR = 'mediaplus-lite'  // Your folder name
+        PROJECT_DIR = 'mediplus-lite'  // Your renamed folder
     }
 
     stages {
-        stage('Checkout & Verify') {
+        stage('Verify Files') {
             steps {
-                // Debug: List all files in workspace
-                bat 'dir /b'  
+                // Debug: Show workspace structure
+                bat 'tree /F /A'  
 
-                // Verify project folder exists
+                // Check if project folder exists
                 bat 'if not exist "%PROJECT_DIR%" (echo ERROR: Folder "%PROJECT_DIR%" missing! && exit 1)'
 
-                // Verify index.html exists inside the folder
+                // Verify index.html exists
                 bat 'if exist "%PROJECT_DIR%\\index.html" (echo index.html found!) else (echo ERROR: index.html missing! && exit 1)'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                dir(env.PROJECT_DIR) {  // Enter the project folder
+                dir(env.PROJECT_DIR) {  // Enter project folder
                     bat 'docker build -t %DOCKER_IMAGE% .'
                 }
             }
@@ -47,7 +47,10 @@ pipeline {
 
     post {
         always {
-            cleanWs()  // Clean workspace after build
+            cleanWs()  // Clean workspace
+        }
+        failure {
+            slackSend channel: '#builds', message: "Build failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
         }
     }
 }
