@@ -2,59 +2,32 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "yourdockerhubusername/static-website"
-        TAG = "latest"
+        DOCKER_IMAGE = 'balaji5667/mediplus-lite'
+        DOCKER_CREDENTIALS_ID = 'dockerhub-creds' // Jenkins credential ID
     }
 
     stages {
-        stage('Checkout') {
-            steps {
-                git url: 'https://github.com/your-username/your-repo.git'
-            }
-        }
-
-        stage('Build') {
-            steps {
-                echo 'Checking HTML and CSS files...'
-                sh 'ls -l'
-            }
-        }
-
         stage('Test') {
             steps {
-                echo 'Running basic HTML lint (optional)'
-                // You can install htmlhint globally and use it here, or skip this
-                sh 'echo "Simulated test: Checking index.html exists..."'
-                sh '[ -f index.html ] || (echo "index.html missing!" && exit 1)'
+                echo 'Testing HTML & CSS...'
+                sh 'ls -l index.html' // or `dir` if Windows
             }
         }
 
-        stage('Docker Build') {
+        stage('Build Docker Image') {
             steps {
-                script {
-                    docker.build("${IMAGE_NAME}:${TAG}")
+                echo 'Building Docker image...'
+                sh 'docker build -t $DOCKER_IMAGE .'
+            }
+        }
+
+        stage('Push to Docker Hub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    sh 'docker push $DOCKER_IMAGE'
                 }
             }
-        }
-
-        stage('Docker Push') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    script {
-                        sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
-                        sh "docker push ${IMAGE_NAME}:${TAG}"
-                    }
-                }
-            }
-        }
-    }
-
-    post {
-        success {
-            echo "✅ Pipeline completed successfully!"
-        }
-        failure {
-            echo "❌ Pipeline failed."
         }
     }
 }
