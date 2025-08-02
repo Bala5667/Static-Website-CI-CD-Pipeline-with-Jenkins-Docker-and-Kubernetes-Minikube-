@@ -2,34 +2,27 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'balaji5667/mediplus-lite'  // Docker Hub image
-        DOCKER_CREDENTIALS_ID = 'dockerhub-creds'  // Jenkins credentials ID
-        PROJECT_DIR = 'mediplus-lite'  // Folder with your HTML/CSS
+        DOCKER_IMAGE = 'balaji5667/mediplus-lite'           // Docker Hub repo
+        DOCKER_CREDENTIALS_ID = 'dockerhub-creds'           // Jenkins Credential ID
+        PROJECT_DIR = 'mediplus-lite'                       // HTML+CSS project folder
     }
 
     stages {
-        stage('Checkout Code') {
-            steps {
-                checkout scm
-            }
-        }
-
         stage('Verify Files') {
             steps {
-                // Debug: Show workspace structure
+                bat 'echo Checking workspace...'
                 bat 'tree /F /A'
-
-                // Check if project folder exists
-                bat 'if not exist "%PROJECT_DIR%" (echo ERROR: Folder "%PROJECT_DIR%" missing! && exit 1)'
-
-                // Verify index.html exists inside the folder
-                bat 'if exist "%PROJECT_DIR%\\index.html" (echo index.html found!) else (echo ERROR: index.html missing! && exit 1)'
+                bat 'if not exist "%PROJECT_DIR%" (echo ERROR: Folder %PROJECT_DIR% not found! && exit 1)'
+                bat 'if not exist "%PROJECT_DIR%\\index.html" (echo ERROR: index.html not found! && exit 1)'
+                bat 'echo ✅ Project structure looks good.'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t %DOCKER_IMAGE% .'
+                dir(env.PROJECT_DIR) {
+                    bat "docker build -t %DOCKER_IMAGE% ."
+                }
             }
         }
 
@@ -41,7 +34,8 @@ pipeline {
                         usernameVariable: 'DOCKER_USER',
                         passwordVariable: 'DOCKER_PASS'
                     )]) {
-                        bat 'docker login -u %DOCKER_USER% -p %DOCKER_PASS%'
+                        bat 'echo Logging in to Docker...'
+                        bat 'echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin'
                         bat 'docker push %DOCKER_IMAGE%'
                     }
                 }
@@ -54,8 +48,7 @@ pipeline {
             cleanWs()
         }
         failure {
-            echo "Build failed!"
-            // Optional Slack or notification step
+            echo "❌ Build failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}"
         }
     }
 }
