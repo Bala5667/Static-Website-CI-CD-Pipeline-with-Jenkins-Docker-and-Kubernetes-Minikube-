@@ -2,33 +2,43 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_IMAGE = 'balaji5667/mediplus-lite'       // ✅ your DockerHub image name
-        DOCKER_CREDENTIALS_ID = 'dockerhub-creds'       // ✅ Jenkins credential ID
+        DOCKER_IMAGE = 'balaji5667/mediplus-lite'
+        DOCKER_CREDENTIALS_ID = 'dockerhub-credentials' // Jenkins Credentials ID
     }
 
     stages {
-        stage('Test') {
+        stage('Clone Repo') {
             steps {
-                echo 'Testing HTML & CSS...'
-                bat 'dir index.html'                     // ✅ Windows command to check HTML file
+                echo 'Cloning repository...'
+                // Jenkins does this by default if the project is connected to GitHub
+            }
+        }
+
+        stage('Test HTML file exists') {
+            steps {
+                echo 'Checking if index.html exists...'
+                bat 'dir index.html'
             }
         }
 
         stage('Build Docker Image') {
             steps {
-                echo 'Building Docker image...'
-                bat 'docker build -t %DOCKER_IMAGE% .'  // ✅ Windows Docker build
+                script {
+                    echo "Building Docker image..."
+                    bat "docker build -t %DOCKER_IMAGE% ."
+                }
             }
         }
 
-        stage('Push to Docker Hub') {
+        stage('Push Docker Image') {
             steps {
-                echo 'Pushing Docker image to Docker Hub...'
-                withCredentials([usernamePassword(credentialsId: "${DOCKER_CREDENTIALS_ID}", usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
-                    bat """
-                        echo %DOCKER_PASS% | docker login -u %DOCKER_USER% --password-stdin
-                        docker push %DOCKER_IMAGE%
-                    """
+                script {
+                    withCredentials([usernamePassword(credentialsId: env.DOCKER_CREDENTIALS_ID, usernameVariable: 'USERNAME', passwordVariable: 'PASSWORD')]) {
+                        echo "Logging into Docker Hub..."
+                        bat "docker login -u %USERNAME% -p %PASSWORD%"
+                        echo "Pushing image to Docker Hub..."
+                        bat "docker push %DOCKER_IMAGE%"
+                    }
                 }
             }
         }
