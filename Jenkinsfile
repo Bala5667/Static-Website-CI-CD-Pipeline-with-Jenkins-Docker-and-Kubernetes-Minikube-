@@ -17,7 +17,7 @@ pipeline {
         stage('Test HTML file exists') {
             steps {
                 echo 'Checking if index.html exists...'
-                bat 'dir index.html'
+                bat 'cmd /c "dir index.html"'
             }
         }
 
@@ -41,6 +41,12 @@ pipeline {
                     }
                 }
             }
+        }
+    }
+    
+    post {
+        always {
+            cleanWs()
         }
     }
 }
