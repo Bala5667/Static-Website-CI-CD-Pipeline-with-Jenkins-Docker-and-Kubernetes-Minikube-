@@ -8,33 +8,15 @@ pipeline {
     }
 
     stages {
-        stage('Checkout Code') {
-            steps {
-                checkout scm
-            }
-        }
-
         stage('Deploy on EC2') {
             steps {
-                sshagent(['ec2-ssh-key']) {
-                    sh """
-                    ssh -o StrictHostKeyChecking=no $REMOTE_HOST '
-                        docker rm -f $CONTAINER_NAME || true &&
-                        docker pull $IMAGE_NAME &&
-                        docker run -d --name $CONTAINER_NAME -p 80:80 $IMAGE_NAME
-                    '
-                    """
+                withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'KEYFILE', usernameVariable: 'USER')]) {
+                    sh '''
+                    ssh -i "$KEYFILE" -o StrictHostKeyChecking=no $USER@3.89.106.25 \
+                    "docker rm -f $CONTAINER_NAME || true && docker run -d --name $CONTAINER_NAME -p 80:80 $IMAGE_NAME"
+                    '''
                 }
             }
-        }
-    }
-
-    post {
-        success {
-            echo '✅ Deployment succeeded.'
-        }
-        failure {
-            echo '❌ Deployment failed.'
         }
     }
 }
