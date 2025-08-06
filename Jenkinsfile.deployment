@@ -3,7 +3,7 @@ pipeline {
 
     environment {
         EC2_USER = "ec2-user"                // default user for Amazon Linux
-        EC2_IP = "YOUR.EC2.PUBLIC.IP"        // 🔁 replace with your EC2 public IP
+        EC2_IP = "3.89.106.25"        // 🔁 replace with your EC2 public IP
         DOCKER_IMAGE = "balaji5667/mediplus-lite"
     }
 
