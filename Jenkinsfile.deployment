@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     environment {
-        EC2_USER = "ec2-user"                // default user for Amazon Linux
-        EC2_IP = "3.89.106.25"        // 🔁 replace with your EC2 public IP
+        EC2_USER = "ec2-user"
+        EC2_IP = "3.89.106.25"
         DOCKER_IMAGE = "balaji5667/mediplus-lite"
     }
 
@@ -12,12 +12,12 @@ pipeline {
             steps {
                 sshagent(['ec2-ssh-key']) {
                     sh """
-                    ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_IP << 'ENDSSH'
-                    docker stop mediplus || true
-                    docker rm mediplus || true
-                    docker pull $DOCKER_IMAGE
-                    docker run -d --name mediplus -p 80:80 $DOCKER_IMAGE
-                    ENDSSH
+                        ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_IP << ENDSSH
+                        docker stop mediplus || true
+                        docker rm mediplus || true
+                        docker pull $DOCKER_IMAGE
+                        docker run -d --name mediplus -p 80:80 $DOCKER_IMAGE
+                        ENDSSH
                     """
                 }
             }
