@@ -11,7 +11,7 @@ pipeline {
     stages {
         stage('Deploy on EC2') {
             steps {
-                sh """
+                bat """
                 ssh -i "$PRIVATE_KEY" -o StrictHostKeyChecking=no $EC2_USER@$EC2_IP << 'ENDSSH'
                 docker stop mediplus || true
                 docker rm mediplus || true
