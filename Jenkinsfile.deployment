@@ -4,20 +4,19 @@ pipeline {
     environment {
         EC2_USER = "ec2-user"
         EC2_IP = "3.89.106.25"
+        PEM_PATH = "C:/Users/HP/Desktop/Keypairs/worker-AmazonLinux.pem"
         DOCKER_IMAGE = "balaji5667/mediplus-lite"
-        PRIVATE_KEY = "C:/Users/HP/Desktop/Keypairs/worker-AmazonLinux.pem"
     }
 
     stages {
         stage('Deploy on EC2') {
             steps {
                 bat """
-                ssh -i "$PRIVATE_KEY" -o StrictHostKeyChecking=no $EC2_USER@$EC2_IP << 'ENDSSH'
-                docker stop mediplus || true
-                docker rm mediplus || true
-                docker pull $DOCKER_IMAGE
-                docker run -d --name mediplus -p 80:80 $DOCKER_IMAGE
-                ENDSSH
+                echo Deploying to EC2 instance...
+                ssh -i "%PEM_PATH%" -o StrictHostKeyChecking=no %EC2_USER%@%EC2_IP% "docker stop mediplus || true"
+                ssh -i "%PEM_PATH%" -o StrictHostKeyChecking=no %EC2_USER%@%EC2_IP% "docker rm mediplus || true"
+                ssh -i "%PEM_PATH%" -o StrictHostKeyChecking=no %EC2_USER%@%EC2_IP% "docker pull %DOCKER_IMAGE%"
+                ssh -i "%PEM_PATH%" -o StrictHostKeyChecking=no %EC2_USER%@%EC2_IP% "docker run -d --name mediplus -p 80:80 %DOCKER_IMAGE%"
                 """
             }
         }
