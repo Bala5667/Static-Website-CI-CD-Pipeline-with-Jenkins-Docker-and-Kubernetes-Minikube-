@@ -5,21 +5,20 @@ pipeline {
         EC2_USER = "ec2-user"
         EC2_IP = "3.89.106.25"
         DOCKER_IMAGE = "balaji5667/mediplus-lite"
+        PRIVATE_KEY = "C:\Users\HP\Desktop\Keypairs\worker-AmazonLinux.pem"
     }
 
     stages {
         stage('Deploy on EC2') {
             steps {
-                sshagent(['ec2-ssh-key']) {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no $EC2_USER@$EC2_IP << ENDSSH
-                        docker stop mediplus || true
-                        docker rm mediplus || true
-                        docker pull $DOCKER_IMAGE
-                        docker run -d --name mediplus -p 80:80 $DOCKER_IMAGE
-                        ENDSSH
-                    """
-                }
+                sh """
+                ssh -i "$PRIVATE_KEY" -o StrictHostKeyChecking=no $EC2_USER@$EC2_IP << 'ENDSSH'
+                docker stop mediplus || true
+                docker rm mediplus || true
+                docker pull $DOCKER_IMAGE
+                docker run -d --name mediplus -p 80:80 $DOCKER_IMAGE
+                ENDSSH
+                """
             }
         }
     }
