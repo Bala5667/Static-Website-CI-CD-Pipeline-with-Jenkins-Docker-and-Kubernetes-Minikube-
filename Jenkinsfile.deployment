@@ -5,7 +5,7 @@ pipeline {
         EC2_USER = "ec2-user"
         EC2_IP = "3.89.106.25"
         DOCKER_IMAGE = "balaji5667/mediplus-lite"
-        PRIVATE_KEY = "C:\Users\HP\Desktop\Keypairs\worker-AmazonLinux.pem"
+        PRIVATE_KEY = "C:/Users/HP/Desktop/Keypairs/worker-AmazonLinux.pem"
     }
 
     stages {
