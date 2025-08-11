@@ -1,0 +1,19 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Test EC2 SSH Connection') {
+            steps {
+                withCredentials([sshUserPrivateKey(credentialsId: 'YOUR-SSH-CREDENTIALS-ID', keyFileVariable: 'KEYFILE')]) {
+                    bat '''
+                        echo ===== Checking SSH version =====
+                        ssh -V
+
+                        echo ===== Testing EC2 Connection =====
+                        ssh -i "%KEYFILE%" -o StrictHostKeyChecking=no ec2-user@ec2184.73.131.85.compute-1.amazonaws.com "echo SSH connection OK"
+                    '''
+                }
+            }
+        }
+    }
+}
