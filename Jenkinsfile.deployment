@@ -1,17 +1,37 @@
 pipeline {
     agent any
+
     stages {
-        stage('Connect to EC2') {
+        stage('Test SSH Key on Windows') {
             steps {
-                withCredentials([sshUserPrivateKey(
-                    credentialsId: 'ec2-ssh-key',
-                    keyFileVariable: 'KEYFILE',
-                    usernameVariable: 'USER'
-                )]) {
-                    bat """
-                        echo Connecting to EC2...
-                        ssh -o StrictHostKeyChecking=no -i "%KEYFILE%" %USER%@54.221.40.241 "hostname && whoami && uptime"
-                    """
+                withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', 
+                                                  keyFileVariable: 'KEYFILE', 
+                                                  usernameVariable: 'USER')]) {
+                    // Using PowerShell to inspect the key file
+                    powershell '''
+                        Write-Host "== Key File Path =="
+                        Write-Host $env:KEYFILE
+                        
+                        Write-Host "== Checking if file exists =="
+                        if (Test-Path $env:KEYFILE) {
+                            Write-Host "Key file found ✅"
+                        } else {
+                            Write-Host "Key file NOT found ❌"
+                            Exit 1
+                        }
+
+                        Write-Host "== File Permissions (icacls) =="
+                        icacls $env:KEYFILE
+
+                        Write-Host "== File Contents Preview (first 3 lines) =="
+                        Get-Content $env:KEYFILE -TotalCount 3
+                    '''
+
+                    // Test SSH connection
+                    powershell '''
+                        Write-Host "== Connecting to EC2 =="
+                        ssh -o StrictHostKeyChecking=no -i $env:KEYFILE $env:USER@54.221.40.241 "hostname && whoami && uptime"
+                    '''
                 }
             }
         }
