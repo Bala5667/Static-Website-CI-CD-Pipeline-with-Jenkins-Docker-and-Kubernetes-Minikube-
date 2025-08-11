@@ -4,33 +4,27 @@ pipeline {
     stages {
         stage('Test SSH Key on Windows') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', 
-                                                  keyFileVariable: 'KEYFILE', 
-                                                  usernameVariable: 'USER')]) {
-                    // Using PowerShell to inspect the key file
-                    powershell '''
-                        Write-Host "== Key File Path =="
-                        Write-Host $env:KEYFILE
-                        
-                        Write-Host "== Checking if file exists =="
-                        if (Test-Path $env:KEYFILE) {
-                            Write-Host "Key file found ✅"
-                        } else {
-                            Write-Host "Key file NOT found ❌"
-                            Exit 1
-                        }
+                withCredentials([sshUserPrivateKey(credentialsId: 'my-ssh-key', keyFileVariable: 'KEYFILE', usernameVariable: 'SSHUSER')]) {
+                    bat '''
+                    echo ========================
+                    echo Jenkins SSH Key Test
+                    echo ========================
 
-                        Write-Host "== File Permissions (icacls) =="
-                        icacls $env:KEYFILE
+                    echo Key file should be here:
+                    echo %KEYFILE%
+                    echo.
 
-                        Write-Host "== File Contents Preview (first 3 lines) =="
-                        Get-Content $env:KEYFILE -TotalCount 3
-                    '''
+                    if exist "%KEYFILE%" (
+                        echo ✅ Key file found.
+                        dir "%KEYFILE%"
+                    ) else (
+                        echo ❌ Key file NOT found!
+                        exit /b 1
+                    )
 
-                    // Test SSH connection
-                    powershell '''
-                        Write-Host "== Connecting to EC2 =="
-                        ssh -o StrictHostKeyChecking=no -i $env:KEYFILE $env:USER@54.221.40.241 "hostname && whoami && uptime"
+                    echo.
+                    echo Testing SSH connection...
+                    "C:\\Program Files\\Git\\usr\\bin\\ssh.exe" -i "%KEYFILE%" -o StrictHostKeyChecking=no %SSHUSER%@ec2-xx-xx-xx-xx.compute-1.amazonaws.com "echo SSH connection OK"
                     '''
                 }
             }
