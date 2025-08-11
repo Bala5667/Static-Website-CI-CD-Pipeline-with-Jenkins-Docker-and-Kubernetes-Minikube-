@@ -12,11 +12,11 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'KEYFILE')]) {
                     bat """
-                    rem === Fix private key permissions ===
+                    rem Fix private key permissions for SSH (on Windows)
                     icacls "%KEYFILE%" /inheritance:r
                     icacls "%KEYFILE%" /grant:r "%USERNAME%:R"
 
-                    rem === SSH into EC2 and deploy container ===
+                    rem SSH into EC2 and deploy container
                     ssh -i "%KEYFILE%" -o StrictHostKeyChecking=no %REMOTE_HOST% ^
                         "docker rm -f %CONTAINER_NAME% || true && docker pull %IMAGE_NAME% && docker run -d --name %CONTAINER_NAME% -p 80:80 %IMAGE_NAME%"
                     """
