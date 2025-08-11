@@ -1,25 +1,18 @@
 pipeline {
     agent any
 
-    environment {
-        REMOTE_HOST     = "ec2-user@54.221.40.241"
-        IMAGE_NAME      = "balaji5667/mediplus-lite"
-        CONTAINER_NAME  = "mediplus"
-    }
-
     stages {
-        stage('Deploy') {
+        stage('Connect to EC2') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'KEYFILE')]) {
-                    bat """
-                    rem Fix private key permissions for SSH (on Windows)
-                    icacls "%KEYFILE%" /inheritance:r
-                    icacls "%KEYFILE%" /grant:r "%USERNAME%:R"
-
-                    rem SSH into EC2 and deploy container
-                    ssh -i "%KEYFILE%" -o StrictHostKeyChecking=no %REMOTE_HOST% ^
-                        "docker rm -f %CONTAINER_NAME% || true && docker pull %IMAGE_NAME% && docker run -d --name %CONTAINER_NAME% -p 80:80 %IMAGE_NAME%"
-                    """
+                script {
+                    withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', 
+                                                       keyFileVariable: 'KEYFILE', 
+                                                       usernameVariable: 'USER')]) {
+                        bat '''
+                            echo "Connecting to EC2..."
+                            ssh -o StrictHostKeyChecking=no -i $KEYFILE $USER@54.221.40.241 "hostname && whoami && uptime"
+                        '''
+                    }
                 }
             }
         }
