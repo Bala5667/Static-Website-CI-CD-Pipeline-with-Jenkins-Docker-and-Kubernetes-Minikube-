@@ -4,7 +4,7 @@ pipeline {
     stages {
         stage('Test EC2 SSH Connection') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'my-ec2-key', keyFileVariable: 'KEYFILE')]) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'KEYFILE')]) {
                     bat '''
                         echo ===== Checking SSH version =====
                         ssh -V
