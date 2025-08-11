@@ -2,29 +2,15 @@ pipeline {
     agent any
 
     stages {
-        stage('Test SSH Key on Windows') {
+        stage('Test EC2 SSH Connection') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'KEYFILE', usernameVariable: 'SSHUSER')]) {
+                withCredentials([sshUserPrivateKey(credentialsId: 'my-ec2-key', keyFileVariable: 'KEYFILE')]) {
                     bat '''
-                    echo ========================
-                    echo Jenkins SSH Key Test
-                    echo ========================
+                        echo ===== Checking SSH version =====
+                        ssh -V
 
-                    echo Key file should be here:
-                    echo %KEYFILE%
-                    echo.
-
-                    if exist "%KEYFILE%" (
-                        echo ✅ Key file found.
-                        dir "%KEYFILE%"
-                    ) else (
-                        echo ❌ Key file NOT found!
-                        exit /b 1
-                    )
-
-                    echo.
-                    echo Testing SSH connection...
-                    "C:\\Program Files\\Git\\usr\\bin\\ssh.exe" -i "%KEYFILE%" -o StrictHostKeyChecking=no %SSHUSER%@ec2-xx-xx-xx-xx.compute-1.amazonaws.com "echo SSH connection OK"
+                        echo ===== Testing EC2 Connection =====
+                        ssh -i "%KEYFILE%" -o StrictHostKeyChecking=no ec2-user@ec2-184-73-131-85.compute-1.amazonaws.com "echo SSH connection OK"
                     '''
                 }
             }
