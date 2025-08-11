@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        REMOTE_HOST = "ec2-user@3.89.106.25"
+        REMOTE_HOST = "ec2-user@54.221.40.241"
         IMAGE_NAME = "balaji5667/mediplus-lite" 
         CONTAINER_NAME = "mediplus"
     }
