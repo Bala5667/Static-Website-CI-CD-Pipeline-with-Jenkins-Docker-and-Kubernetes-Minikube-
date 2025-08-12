@@ -1,0 +1,18 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mediplus-lite
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: mediplus-lite
+  template:
+    metadata:
+      labels:
+        app: mediplus-lite
+    spec:
+      containers:
+        - name: nodejs
+          image: balaji5667/mediplus-lite:latest
+          imagePullPolicy: Always
