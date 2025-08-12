@@ -13,6 +13,7 @@ spec:
         app: mediplus-lite
     spec:
       containers:
-        - name: nodejs
+        - name: mediplus-lite
           image: balaji5667/mediplus-lite:latest
           imagePullPolicy: Always
+
