@@ -9,10 +9,10 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 withCredentials([file(credentialsId: 'config', variable: 'KUBECONFIG')]) {
-                    sh """
-                    kubectl --kubeconfig=$KUBECONFIG set image deployment/my-deployment \
-                    mediplus-lite=${DOCKER_IMAGE} --record
-                    """
+                    sh '''
+                    kubectl set image deployment/my-deployment \
+                    mediplus-lite=${DOCKER_IMAGE} --record --kubeconfig=$KUBECONFIG
+                    '''
                 }
             }
         }
@@ -20,7 +20,10 @@ pipeline {
         stage('Verify Deployment') {
             steps {
                 withCredentials([file(credentialsId: 'config', variable: 'KUBECONFIG')]) {
-                    sh "kubectl --kubeconfig=$KUBECONFIG rollout status deployment/my-deployment"
+                    sh '''
+                    kubectl rollout status deployment/my-deployment \
+                    --kubeconfig=$KUBECONFIG
+                    '''
                 }
             }
         }
