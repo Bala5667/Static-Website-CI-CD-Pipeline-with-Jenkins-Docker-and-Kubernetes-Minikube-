@@ -1,17 +1,26 @@
 pipeline {
     agent any
+    
+    environment {
+        DOCKER_IMAGE = "balaji5667/mediplus-lite:latest"
+    }
 
     stages {
-        stage('Test EC2 SSH Connection') {
+        stage('Deploy to Kubernetes') {
             steps {
-                withCredentials([sshUserPrivateKey(credentialsId: 'ec2-ssh-key', keyFileVariable: 'KEYFILE')]) {
-                    bat '''
-                        echo ===== Checking SSH version =====
-                        ssh -V
+                withCredentials([file(credentialsId: 'config', variable: 'KUBECONFIG')]) {
+                    sh """
+                    kubectl --kubeconfig=$KUBECONFIG set image deployment/my-deployment \
+                    mediplus-lite=${DOCKER_IMAGE} --record
+                    """
+                }
+            }
+        }
 
-                        echo ===== Testing EC2 Connection =====
-                        ssh -i "%KEYFILE%" -o StrictHostKeyChecking=no ec2-user@ec2-184-73-131-85.compute-1.amazonaws.com "echo SSH connection OK"
-                    '''
+        stage('Verify Deployment') {
+            steps {
+                withCredentials([file(credentialsId: 'config', variable: 'KUBECONFIG')]) {
+                    sh "kubectl --kubeconfig=$KUBECONFIG rollout status deployment/my-deployment"
                 }
             }
         }
