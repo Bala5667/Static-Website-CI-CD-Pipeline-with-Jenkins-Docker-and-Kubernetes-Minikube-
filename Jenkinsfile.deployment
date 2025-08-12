@@ -1,29 +1,15 @@
 pipeline {
     agent any
-    
-    environment {
-        DOCKER_IMAGE = "balaji5667/mediplus-lite:latest"
-    }
 
     stages {
-        stage('Deploy to Kubernetes') {
+        stage('Deploy to Minikube') {
             steps {
-                withCredentials([file(credentialsId: 'config', variable: 'KUBECONFIG')]) {
-                    sh '''
-                    kubectl set image deployment/my-deployment \
-                    mediplus-lite=${DOCKER_IMAGE} --record --kubeconfig=$KUBECONFIG
-                    '''
-                }
-            }
-        }
-
-        stage('Verify Deployment') {
-            steps {
-                withCredentials([file(credentialsId: 'config', variable: 'KUBECONFIG')]) {
-                    sh '''
-                    kubectl rollout status deployment/my-deployment \
-                    --kubeconfig=$KUBECONFIG
-                    '''
+                script {
+                    sh """
+                        kubectl set image deployment/my-deployment \
+                        mediplus-lite=balaji5667/mediplus-lite:latest \
+                        --kubeconfig=/var/lib/jenkins/.kube/config
+                    """
                 }
             }
         }
