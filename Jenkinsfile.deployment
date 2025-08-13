@@ -5,17 +5,26 @@ pipeline {
         stage('Deploy to Minikube') {
             steps {
                 script {
-                    // First, try to create the deployment (safe even if it already exists)
+                    // Define the path to your YAML file
+                    def deploymentYaml = "/var/lib/jenkins/workspace/deployment-to-k8/Medipus_k8s_files/deployment.yaml"
+
+                    // Apply the YAML if it exists
                     sh """
-                        kubectl apply -f /var/lib/jenkins/workspace/deployment-to-k8/Medipus_k8s_files/deployment.yaml \
-                        --kubeconfig=/var/lib/jenkins/.kube/config
+                        if [ -f ${deploymentYaml} ]; then
+                            echo "Applying deployment YAML..."
+                            kubectl apply -f ${deploymentYaml} --kubeconfig=/var/lib/jenkins/.kube/config
+                        fi
                     """
 
-                    // Then, update the image of the deployment
+                    // Dynamically create or update deployment
                     sh """
-                        kubectl set image deployment/my-deployment \
-                        mediplus-lite=balaji5667/mediplus-lite:latest \
-                        --kubeconfig=/var/lib/jenkins/.kube/config
+                        if ! kubectl get deployment my-deployment --kubeconfig=/var/lib/jenkins/.kube/config > /dev/null 2>&1; then
+                            echo "Deployment does not exist. Creating..."
+                            kubectl create deployment my-deployment --image=balaji5667/mediplus-lite:latest --kubeconfig=/var/lib/jenkins/.kube/config
+                        else
+                            echo "Deployment exists. Updating image..."
+                            kubectl set image deployment/my-deployment mediplus-lite=balaji5667/mediplus-lite:latest --kubeconfig=/var/lib/jenkins/.kube/config
+                        fi
                     """
                 }
             }
