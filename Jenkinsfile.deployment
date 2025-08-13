@@ -7,7 +7,7 @@ pipeline {
                 script {
                     // First, try to create the deployment (safe even if it already exists)
                     sh """
-                        kubectl apply -f /var/lib/jenkins/workspace/deployment-to-k8/k8s/deployment.yaml \
+                        kubectl apply -f /var/lib/jenkins/workspace/deployment-to-k8/Medipus k8s files/deployment.yaml \
                         --kubeconfig=/var/lib/jenkins/.kube/config
                     """
 
