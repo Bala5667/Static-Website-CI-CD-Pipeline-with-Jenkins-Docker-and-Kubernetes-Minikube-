@@ -1,10 +1,17 @@
-pipeline {
+pipeline { 
     agent any
 
     stages {
         stage('Deploy to Minikube') {
             steps {
                 script {
+                    // First, try to create the deployment (safe even if it already exists)
+                    sh """
+                        kubectl apply -f /var/lib/jenkins/workspace/deployment-to-k8/k8s/deployment.yaml \
+                        --kubeconfig=/var/lib/jenkins/.kube/config
+                    """
+
+                    // Then, update the image of the deployment
                     sh """
                         kubectl set image deployment/my-deployment \
                         mediplus-lite=balaji5667/mediplus-lite:latest \
